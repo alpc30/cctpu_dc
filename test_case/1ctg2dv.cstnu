@@ -1,0 +1,14 @@
+0	start	e1-end	1	10	c	2	1	2
+0	choice1		e2-end	1	10	c	1	2
+0	choice1		e3-end	10	18	c	1	2
+0	choice2		e4-end	1	30	c	0
+0	choice2		e5-end	3	40	c	0
+0	e1-end		choice1	0	1	r
+0	e2-end		p1	0	1	r
+0	e3-end		p1	0	1	r
+0	e4-end		end	0	1	r
+0	e5-end		end	0	1	r
+0	start		end	10	50	r
+0	p1	choice2	0	1	r
+1	choice1		2	2	-2	2	2	-3	3
+1	choice2		2	2	4	-4	2	5	-5

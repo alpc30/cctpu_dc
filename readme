@@ -1,0 +1,146 @@
+
+
+20160129
+(1) CDRU2 returns conflicts instead of an STNU
+(2) Simplify the conflicts to the sum of variables <= constant
+TODO: combine the result (debug)
+
+
+20160201
+1. the test file 1ctg2dc.cstnu has been changed
+	- the parameters after 'c' are the id of discrete variables that will
+	follow the current ctg.
+	- the order of the discrete variables should be start-end, cause the 
+	implementation will combine the sub-solutions from the last variable
+	to the first
+	
+2. Implementation revision 
+	- add the following discrete variables to CTG in stnu.h and SimEdge
+	- combine the sub-solutions from last to the first
+	- replace the variable of link its lb/ub after the combinations all
+	related discrete variables. (in function renew())
+	- unionConflict will deal with two conflicts which has the same 
+	variales
+	
+* the format of a combined sub-solution is a conjunction of several disjunctions
+of constraints (2-level)
+
+
+      
+20150417
+1. test Zipcar problem      
+
+      
+      
+20160509
+1. This version does not consider combining subsolutions
+
+	./cds_stnu -o 2 -c 1 /home/jing/workspace/testcase/tests/AUV/AUV-1.cctp 
+
+   
+20160603
+1. the previous version does not take the advantage of found conflicts, this
+version is trying to fix it by adding resolveConflicts and fix labels of links.
+
+2. it is still not correct for AUV-3 AUV-1...
+it finds the same conflict several times.
+
+the current goal is to implete relaxation problem without combining variables
+One possible correct version is 20160509, although it does not take the 
+advantage of found conflicts.
+      
+
+20160607
+ 
+ a correct version for relaxation problem without combining variables
+ 1. keep a record of found conflicts and check the resolution of found conflicts
+ with current candidate 
+ 2. add the debug flag
+
+20160610
+	1. return only one conflict when checking the candidate with found 
+	conflicts (make the implementation faster than the python version)
+	2. return all conflicts without expanding them. push them all into 
+	resolved conflicts	
+
+
+20160901 
+	complete implementation
+
+20160913
+	keep function1() as the implementation used in icaps 2015 paper
+
+20160914
+	try to enumerate the negative cycles
+	bugs 
+
+
+20160917
+	negative cycles are from: (1) backprop to a neg link whose backprop process has not finished
+				  (2) dfs to a visited node
+				  (3) dfs to a node which belongs to a neg link who is being backpropped
+				  (4*) as (1) and this link is achieved by backproping aother link as (1)
+	test well with cctpu/cst1 (1996/2000, bad_alloc problem , AUV1-547, 1141q) 
+	for (3) it is hard to say which neg link is the source
+
+
+20160923
+	enumerate nc: (1) for the backpropagations that cause a back-propagation cycle. We propagate the 
+			those negative links again after all these back-propagations
+		      (2) expensive runtime, no ng left
+
+
+20161006
+	enumerate nc: 
+	(1) remove 20160923(1)
+	(2) keep a record of the negative links, whose start node has shallower depth than its end node does.
+	use this kind of links when DFS a node, which has been explored with a negative returning value.
+	(3) fix a bug: being_back.resize will cause some memory errors. In the current version, no added links
+	are negative, so I removed being_back.resize.
+	
+	
+20161011
+	(1) fix a bug. Obj=DC_CHECK, constraints ub>=lb area lost
+	(2) back_prop, add new edge, label = 0
+	
+20161017
+	(1) fix a bug: in the end of dfs, reset v[id] = false. otherwise won't pass cst6/AUV1-198.cst.
+	(2) find another problem: flexibility of mission is too small when the mission contains multiple activities
+	    need to fix this problem
+	(3) fix (2) by generating new test cases
+
+20161018
+	(1) modify the envelope of STNU: consider the rqms prior to the time
+	related part: stnu.cc lp.cc cds.cc
+	
+20161109
+	(1) combine one ctg every time
+	(2) bugs to fix
+	
+20161112
+	(1) fix bugs. get reasonable answer for cst1-3
+	(2) TODO: consider multi-level combining processes
+	
+	    
+20161118
+	(1) fix bugs. get reasonable answer for ./test_case/1ctg2dv.cst (2-level combining processes)
+	(2) TODO: creat a version that remove GuRobi and double checking process (this weekend)
+
+20161120 
+	(1) remove gurobi
+	       
+20170501
+	(1) merge fixed cds_stnu (201702)
+		(1) repair gurobi
+		(2) add a cubic dc checking part (return T/F and record the found conflict in ng_path)
+		(3) use the cubic dc checking part in the cds 
+		(4) test Max_Delay with RCPSP
+		(5) fix a precision problem in cubic dc checking 	       
+		
+20170502
+	(1) implement relaxation problem, minimize relaxation cost to achieve DC
+	
+20170504
+	(1) complete the relaxtion problem
+	(2) test relaxation problem by constraint model (mip_baseline.cc) and Peng's cdru-master (in Python)
+	

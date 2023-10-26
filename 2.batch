@@ -1,0 +1,24 @@
+#!/bin/sh
+cp cds_stnu cds_stnu_test
+
+count=0
+done_file=$(cat /home/jing/work/workspace/optimise-cctpu/relax_cost_cst1_20170504.result)
+for v in 1 
+do
+for f in  $(ls -S -r /home/jing/work/data/cctpu/cst$v/AUV*.cst)
+#for f in  $(ls -S -r /home/jing/work/data/CST4/*.cst)
+do
+    if echo "$done_file" | grep -q "$f"; then
+	continue;
+    fi;	
+    #timeout -s 2 1000.5s 
+    ./cds_stnu_test -o 2 -v 1 -s 5 $f & count=`ps r -C cds_stnu_test | wc -l`
+    while [ $count -gt 2 ]
+    do
+        sleep 1
+        count=`ps r -C cds_stnu_test| wc -l`
+    #    break
+    done
+    
+done
+done
